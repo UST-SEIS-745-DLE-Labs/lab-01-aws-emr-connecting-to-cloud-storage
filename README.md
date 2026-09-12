@@ -8,7 +8,7 @@ deployment and other configuration tasks you will use a Github Codespace
 development environment and the AWS command line interface.
 
 Once infrastructure deployment is complete, we will connect to a public
-S3 bucket hosting an AWS Open Data dataset (NOAA surface readings) and
+S3 bucket hosting an AWS Open Data dataset (NOAA surface weather readings) and
 bring that into our Data Lake using PySpark. Next, you will explore the
 differences between the Hadoop Distributed File System (HDFS) running on
 EMR and the EMR file system (EMRFS) backed by AWS S3. In this lab, we
@@ -31,16 +31,16 @@ TODO add new architectural diagram
 
 Notes:
 - Clone repository from GitHub: https://github.com/UST-SEIS-745-DLE-Labs/lab-01-aws-emr-connecting-to-cloud-storage
-- Readme may be previewed directly in Codespace or on GitHub Repository home page
-- In order for instructors to maintain this repository, you'll need to configure git subtree to work appropriately.  
-Seems to be an issue with the Git installation on this version of Ubuntu.  Creating a symbolic link fixes this: 
-```
-sudo chmod +x /usr/share/doc/git/contrib/subtree/git-subtree.sh
-sudo ln -s /usr/share/doc/git/contrib/subtree/git-subtree.sh /usr/local/libexec/git-core/git-subtree
-```
+- Readme may be previewed directly in your Codespace or on your GitHub Repository home page
+- In order for instructors to maintain this repository, you'll need to configure the git subtree executable to work appropriately.  
+
+    Seems to be an issue with the Git installation on this version of Ubuntu.  Creating a symbolic link fixes this: 
+    ```
+    sudo chmod +x /usr/share/doc/git/contrib/subtree/git-subtree.sh
+    sudo ln -s /usr/share/doc/git/contrib/subtree/git-subtree.sh /  usr/local/libexec/git-core/git-subtree
+    ```
 - For maintenance of these labs we will want something of a developer's guide in its own repository.
-- In order to push to main and feature branches from codespaces, you need to reauthenticate with 
-github and update git cli credentials like so:
+- In order to push to main and feature branches from codespaces, you need to reauthenticate with github and update git cli credentials like so:
     ```
     export GITHUB_TOKEN=
     gh auth login
@@ -51,25 +51,23 @@ TODO Complete Section 1 with detailed instructions
 
 ## Section 2: Install AWS CLI, update lab parameters, and install other dependencies
 
-Steps for this section are included primarly in ./infra/codespace-init.sh.  This seemed
-the most approrpiate place to install necessary dependencies on codespace as they will
+Steps for this section are included primarly in ./infra/codespace-init.sh.  It seemed appropriate to place this in the infra directory as necessary codespace installations will
 in large part be determined by what is needed for deploying the infrastructure.  If there 
 are differences across labs, we can just install a superset of dependencies needed for all labs
-which use that particular infra environment.  A bit of extra overhead but no real harm done.
+which use that particular lab environment.  A bit of extra overhead but no real harm done.
 
 AWS Configure parameters will need to be taken from your AWS Academy / Vocareum lab environment.
 Navigate to 'AWS Details', 'AWS CLI', and then click 'Show' from your Learner Lab environment page.
 Here you will see your aws access key id, aws access key, and aws session token.
 
 In addition to installing dependencies, you will need to navigate to checkip.amazonaws.com and 
-update the Client IP address parameters.
+update the Client IP address in ./infra/lab-params.sh.
 
 Note that all shell scripts here are expected to be entered into the terminal line by line,
 building student familiarity with the terminal / REPL flow, Linux utilities, git/aws CLIs,
 reading stdout, and troubleshooting issues as they arise.
 
-Another way to configure the AWS CLI is to place it within the container definition.  May look
-at Organization codespaces and container features later on.
+Another way to configure the AWS CLI is to place it within the container definition.  May look at these features more closely in the future.
 
 TODO complete section 2
 
