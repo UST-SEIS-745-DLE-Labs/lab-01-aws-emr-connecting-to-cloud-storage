@@ -17,7 +17,7 @@
     "ClientIP": {
       "Type": "String"
     },
-    "Cloud9IP": {
+    "CodespaceIP": {
       "Type": "String"
     },
     "KeyPairName": {
@@ -130,14 +130,14 @@
     "emrMasterSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Allow Cloud9 and client access to master node",
+        "GroupDescription": "Allow codespace vm and client access to master node",
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Ref": "Cloud9IP"
+              "Ref": "CodespaceIP"
             }
           },
           {
@@ -213,15 +213,6 @@
       "Properties": {
         "Path": "/",
         "Roles": ["LabRole"]
-      }
-    },
-    "S3Bucket": {
-      "Type": "AWS::S3::Bucket",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "BucketName": {
-          "Ref": "BucketName"
-        }
       }
     }
   }

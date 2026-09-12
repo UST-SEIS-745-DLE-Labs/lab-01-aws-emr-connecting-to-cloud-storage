@@ -1,7 +1,7 @@
 ############################################
 # INITIALIZE LAB PARAMETERS AND VARIABLES  #
 ############################################
-source ./lab-params.sh
+source ./infra/lab-params.sh
 
 ############################################
 # USE EXISTING OR CREATE NEW S3 BUCKET     #
@@ -29,7 +29,7 @@ aws ec2 create-key-pair \
 chmod 400 "${LAB_KEY_FILE}" #change permissions
 
 aws cloudformation deploy \
-  --template-file ./template.json \
+  --template-file ./infra/template.json \
   --stack-name "lab-emr-cluster-stack" \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides \
@@ -37,15 +37,9 @@ aws cloudformation deploy \
     BucketName="${S3_BUCKET_NAME}" \
     InstanceType=m4.large \
     ClientIP="${CLIENT_IP}${CIDR_SUFFIX}" \
-    Cloud9IP="${CLOUD9_PRIVATE_IP}/32" \
+    CodespaceIP="${CODESPACE_IP}/32" \
     BucketName="${S3_BUCKET_NAME}" \
     InstanceCount=2 \
     KeyPairName="${LAB_KEY_NAME}" \
     ReleaseLabel="emr-7.12.0" \
     EbsRootVolumeSize=32
-
-############################################
-# CONNECT TO EMR MASTER NODE               #
-############################################
-LAB_CLUSTER_ID=`aws emr list-clusters --query "Clusters[?Name=='${LAB_ENV_NAME}'].Id | [0]" --output text`
-aws emr wait cluster-running --cluster-id ${LAB_CLUSTER_ID}
