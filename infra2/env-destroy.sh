@@ -1,0 +1,12 @@
+############################################
+# INITIALIZE LAB PARAMETERS AND VARIABLES  #
+############################################
+source ./lab-params.sh
+
+############################################
+# DELETE LAB RESOURCES                     #
+############################################
+aws cloudformation delete-stack --stack-name "${LAB_ENV_NAME}"
+aws ec2 delete-key-pair --key-name "${LAB_KEY_NAME}"
+rm "${LAB_KEY_FILE}"
+aws cloudformation wait stack-delete-complete --stack-name "${LAB_ENV_NAME}"
