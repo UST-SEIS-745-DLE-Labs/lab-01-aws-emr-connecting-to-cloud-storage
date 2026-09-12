@@ -85,6 +85,9 @@ Note that all shell scripts here are expected to be entered into the terminal li
 building student familiarity with the terminal / REPL flow, Linux utilities, git/aws CLIs,
 reading stdout, and troubleshooting issues as they arise.
 
+Another way to configure the AWS CLI is to place it within the container definition.  May look
+at Organization codespaces and container features later on.
+
 TODO complete section 2
 
 ## Section 3: Take a look at the new infrastructure then transfer files and connect to the Hadoop master node
