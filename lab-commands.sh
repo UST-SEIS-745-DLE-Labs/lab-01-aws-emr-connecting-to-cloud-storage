@@ -1,6 +1,6 @@
 ############################################
 # INITIALIZE LAB PARAMETERS AND VARIABLES  #
-############################################
+###########################################
 CLIENT_IP="10.10.10.10" # Change this line
 LAB_ENV_NAME="lab-emr-cluster"
 LAB_STACK_NAME="${LAB_ENV_NAME}-stack"
