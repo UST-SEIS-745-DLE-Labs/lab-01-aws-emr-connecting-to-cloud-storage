@@ -21,9 +21,9 @@ As a prerequisite to this lab you should have access to our class AWS
 environment via <https://awsacademy.instructure.com>.
 
 You should also have a GitHub account and access to create a new GitHub
-CodeSpace: https://github.com/features/codespaces
+Codespace: https://github.com/features/codespaces
 
-Here is an overview of our lab environment:
+Here is an overview of our development environment:
 
 TODO add new architectural diagram
 
@@ -39,29 +39,12 @@ sudo chmod +x /usr/share/doc/git/contrib/subtree/git-subtree.sh
 sudo ln -s /usr/share/doc/git/contrib/subtree/git-subtree.sh /usr/local/libexec/git-core/git-subtree
 ```
 - For maintenance of these labs we will want something of a developer's guide in its own repository.
-- In order to push to main and feature branches from codespaces, attempted the following.  Will need
-to start from a fresh codespace to see what is necessary.  Will not impact students, they only read
-and repo read permissions are currently public.
-  - Reauthenticated via gh cli: 
+- In order to push to main and feature branches from codespaces, you need to reauthenticate with 
+github and update git cli credentials like so:
     ```
     export GITHUB_TOKEN=
     gh auth login
     gh auth setup-git
-    ```
-  - Deleted and cloned a fresh repository
-  - Added devcontainer definition with explicit repository permissions and rebuilt container:
-    ```
-    {
-      "customizations": {
-        "codespaces": {
-          "repositories": {
-            "UST-SEIS-745-DLE-Labs/*": {
-              "permissions": "write-all"
-            }
-          }
-        }
-      }
-    }
     ```
 
 TODO Complete Section 1 with detailed instructions
