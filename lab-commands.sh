@@ -1,49 +1,8 @@
 ############################################
-# INITIALIZE LAB PARAMETERS AND VARIABLES  #
-###########################################
-CLIENT_IP="10.10.10.10" # Change this line
-LAB_ENV_NAME="lab-emr-cluster"
-LAB_STACK_NAME="${LAB_ENV_NAME}-stack"
-LAB_KEY_NAME="${LAB_ENV_NAME}-keypair"
-LAB_KEY_FILE="${LAB_KEY_NAME}.pem"
-CLOUD9_PRIVATE_IP=`hostname -i`
-BUCKET_NAME="s3-dle-`uuidgen`"
-
+# LOAD LAB PARAMETERS                      #
 ############################################
-# CREATE LAB INFRASTRUCTURE USING AWS CLI  #
-############################################
-aws configure set region us-east-1
-export AWS_SHARED_CREDENTIALS_FILE=/home/ec2-user/.aws/credentials
-
-CIDR_SUFFIX=
-if [ "${CLIENT_IP}" = "0.0.0.0" ]; then
-    CIDR_SUFFIX="/0"
-else
-    CIDR_SUFFIX="/32"
-fi
-
-aws ec2 create-key-pair \
-    --key-name "${LAB_KEY_NAME}" \
-    --query 'KeyMaterial' \
-    --output text > "${LAB_KEY_FILE}"
-
-chmod 400 "${LAB_KEY_FILE}" #change permissions
-
-aws cloudformation deploy \
-  --template-file ./template.json \
-  --stack-name "lab-emr-cluster-stack" \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides \
-    Name="${LAB_ENV_NAME}" \
-    BucketName="${BUCKET_NAME}" \
-    InstanceType=m4.large \
-    ClientIP="${CLIENT_IP}${CIDR_SUFFIX}" \
-    Cloud9IP="${CLOUD9_PRIVATE_IP}/32" \
-    BucketName="${BUCKET_NAME}" \
-    InstanceCount=2 \
-    KeyPairName="${LAB_KEY_NAME}" \
-    ReleaseLabel="emr-5.32.0" \
-    EbsRootVolumeSize=32
+source ./infra/lab-params.sh
+S3_BUCKET_NAME=`aws s3api list-buckets --query "Buckets[0].Name" --output text`
 
 ############################################
 # CONNECT TO EMR MASTER NODE               #
@@ -57,8 +16,9 @@ ssh -i "${LAB_KEY_FILE}" "hadoop@${LAB_EMR_MASTER_PUBLIC_HOST}"
 ############################################
 # PySpark import from AWS Open Data        #
 ############################################
+pyspark --conf spark.driver.args="$S3_BUCKET_NAME"
 
-pyspark
+s3_bucket = sc.getConf().get("spark.driver.args")
 
 noaa_actuals = spark.read.option("header", True).csv('s3://noaa-gsod-pds/2022/*')
 noaa_actuals_output = noaa_actuals.coalesce(32)
@@ -66,7 +26,7 @@ noaa_actuals_output = noaa_actuals.coalesce(32)
 noaa_actuals_output.write \
   .format('parquet') \
   .mode('overwrite') \
-  .save('s3://bucket_name/noaa_surface_summary/2022') # Replace bucket_name with your S3 bucket name
+  .save(f's3://{s3_bucket}/noaa_surface_summary/2022')
   
 noaa_actuals_output.write \
   .format('parquet') \

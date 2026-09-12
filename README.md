@@ -1,19 +1,15 @@
-## 
-
-## 
-
 ## Introduction
 
 In this lab we will spin up a Hadoop cluster on Amazon Elastic MapReduce
 (EMR) running one master node and two data nodes. For deployment, we
 will leverage Amazon Web Services (AWS) CloudFormation, a cloud
 Infrastructure as Code (IAC) platform. Additionally, for automating
-deployment and other configuration tasks you will use a Cloud9
+deployment and other configuration tasks you will use a Github Codespace 
 development environment and the AWS command line interface.
 
 Once infrastructure deployment is complete, we will connect to a public
 S3 bucket hosting an AWS Open Data dataset (NOAA surface readings) and
-bring that into our Data Lake using Python. Next, you will explore the
+bring that into our Data Lake using PySpark. Next, you will explore the
 differences between the Hadoop Distributed File System (HDFS) running on
 EMR and the EMR file system (EMRFS) backed by AWS S3. In this lab, we
 are using AWS S3 for data lake storage and Apache Spark on EMR for our
@@ -24,110 +20,48 @@ data lake compute.
 As a prerequisite to this lab you should have access to our class AWS
 environment via <https://awsacademy.instructure.com>.
 
+You should also have a GitHub account and access to create a new GitHub
+CodeSpace: https://github.com/features/codespaces
+
 Here is an overview of our lab environment:
 
-![](./media/image1.emf){width="7.5in" height="4.374305555555556in"}
+TODO add new architectural diagram
 
-[\]{.underline}
+## Section 1: Create blank GitHub Codespace and Clone Repository
 
-## **[Section 1: Initialize and upload lab files to your Cloud9 Environment]{.underline}**
+Notes:
+- Clone repository from GitHub: https://github.com/UST-SEIS-745-DLE-Labs/lab-01-aws-emr-connecting-to-cloud-storage
+- Readme may be previewed directly in Codespace or on GitHub Repository home page
+- In order for instructors to maintain this repository, you'll need to configure git subtree to work appropriately.  
+Seems to be an issue with the Git installation on this version of Ubuntu.  Creating a symbolic link fixes this: 
+```
+sudo chmod +x /usr/share/doc/git/contrib/subtree/git-subtree.sh
+sudo ln -s /usr/share/doc/git/contrib/subtree/git-subtree.sh /usr/local/libexec/git-core/git-subtree
+```
+- For maintenance of these labs we will want something of a developer's guide in its own repository.
 
-1.  Make sure you are signed into the AWS Console and using our
-    classroom environment found here:
-    <https://awsacademy.instructure.com/login/canvas>.
+TODO Complete Section 1 with detailed instructions
 
-2.  Navigate to your Cloud9 environment via the AWS Console. If you
-    deleted your previous Cloud9 environment, you may need to create a
-    new one: <https://console.aws.amazon.com/cloud9>.
+## Section 2: Install AWS CLI, update lab parameters, and install other dependencies
 
-    a.  **In network connection settings, select 'SSH'. All other cloud9
-        settings can remain default.**
+Steps for this section are included primarly in ./infra/codespace-init.sh.  This seemed
+the most approrpiate place to install necessary dependencies on codespace as they will
+in large part be determined by what is needed for deploying the infrastructure.  If there 
+are differences across labs, we can just install a superset of dependencies needed for all labs
+which use that particular infra environment.  A bit of extra overhead but no real harm done.
 
-    b.  Name your cloud9 instance whatever you would like, e.g.
-        'cloud9-datalakeengineering'.
+AWS Configure parameters will need to be taken from your AWS Academy / Vocareum lab environment.
+Navigate to 'AWS Details', 'AWS CLI', and then click 'Show' from your Learner Lab environment page.
+Here you will see your aws access key id, aws access key, and aws session token.
 
-3.  Once your Cloud9 environment is up and running, open it and upload
-    lab files:
+In addition to installing dependencies, you will need to navigate to checkip.amazonaws.com and 
+update the Client IP address parameters.
 
-![Graphical user interface, application Description automatically
-generated](./media/image2.png){width="6.683333333333334in"
-height="4.281944444444444in"}
+Note that all shell scripts here are expected to be entered into the terminal line by line,
+building student familiarity with the terminal / REPL flow, Linux utilities, git/aws CLIs,
+reading stdout, and troubleshooting issues as they arise.
 
-4.  Open lab-commands.sh within the Cloud9 text editor.
-
-![A screenshot of a computer Description automatically generated with
-medium confidence](./media/image3.png){width="5.833333333333333in"
-height="2.095138888888889in"}
-
-5.  Navigate to <https://checkip.amazonaws.com> and replace the
-    \'CLIENT_IP\' value in the script with the IP address on your web
-    page. Note that this is the only value you will need to change
-    within the script.
-
-> ![](./media/image4.png){width="2.5208333333333335in"
-> height="0.6777777777777778in"}**Note:** If you normally have issues
-> identifying your client IP address or connecting to services from your
-> machine, feel free to enter \"0.0.0.0\" as your client IP. This will
-> allow all inbound traffic to the box over ports specified for the
-> duration of the lab. While this does pose a security risk it is a
-> suitable workaround if you run into issues connecting.
-
-**Check IP:**
-
-**Modify CLIENT_IP variable assignment in script:**
-
-![](./media/image5.png){width="4.697916666666667in" height="1.96875in"}
-
-6.  
-
-## Section 2: Create a Hadoop cluster using Amazon Elastic MapReduce (EMR), CloudFormation, and the AWS CLI
-
-**Note:** when executing commands from lab-commands.sh do so line by
-line. Be sure to observe the output on your Cloud9 terminal.
-
-1.  In this section of the lab we will be creating our Hadoop cluster
-    using Amazon EMR. First, copy/paste the first few lines to
-    initialize some environment variables used through the script.
-
-- **CLIENT_IP is the IP address of your local machine for use in
-  firewall rules**
-
-- **LAB_ENV_NAME is the base name used for the AWS resources we create**
-
-- **LAB_STACK_NAME is the name of our CloudFormation stack specified in
-  template.json**
-
-- **LAB_KEY_NAME is the name of the private key we will use to SSH to
-  the instance**
-
-- **LAB_KEY_FILE is the file name of the private key associated with the
-  key name above**
-
-- **CLOUD9_PRIVATE_IP is the IP address or the EC2 instance for your
-  Cloud9 environment for use in firewall rules (we will SSH from our
-  Cloud9 environment to the Hadoop master node). Note the script uses
-  command substitution to dynamically retrieve the host name.**
-
-> ![Graphical user interface, text Description automatically
-> generated](./media/image6.png){width="7.5in"
-> height="2.1173611111111112in"}
-
-2.  Execute the next section of the script to create the lab
-    infrastructure. We configure the AWS command line interface, append
-    the appropriate CIDR suffix to the client IP address for use in
-    firewall rules, create our AWS EC2 keypair for connecting to the
-    cluster over SSH, and deploy the infrastructure defined in
-    template.json. Note that there are multiple parameters that we pass
-    in from the command line.
-
-> **Note:** If the AWS CLI returns an error here you may ignore it. An
-> AWS CLI bug causes the command to timeout early. Note that this
-> command can take some time (10 minutes or longer) as there are a lot
-> of AWS resources being created by CloudFormation.
-
-![Text Description automatically
-generated](./media/image7.png){width="5.45in"
-height="5.963612204724409in"}
+TODO complete section 2
 
 ## Section 3: Take a look at the new infrastructure then transfer files and connect to the Hadoop master node
 
@@ -224,10 +158,7 @@ height="2.2083333333333335in"}
     you turn your cluster back on. However, since we are on a student
     lab budget we will destroy our environment at the end of each lab.
 
-The AWS CLI has commands that make deleting an entire CloudFormation
-stack easy:
-
-aws cloudformation delete-stack \--stack-name \"lab-emr-cluster-stack\"
+The env-destroy.sh script will take care of cleaning up lab resources.
 
 2.  Finally, reflect on the lab and inspect the template.json file and
     CloudFormation commands used to automate cluster deployment.
