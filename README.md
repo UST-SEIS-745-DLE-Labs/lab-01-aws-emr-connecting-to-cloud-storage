@@ -29,7 +29,7 @@ lab.
 
 Here is an overview of our lab environment:
 
-![](./media/media/image1.png)
+![](./media/image1.png)
 
 ## Section 1: Installing lab dependencies and configuring AWS CLI in Codespace
 
@@ -46,7 +46,7 @@ particular lab:
     location. Open the repository rather than adding it to the
     workspace.
 
-![](./media/media/image2.png)Your
+![](./media/image2.png)Your
 Codespace should look something like this, possibly with a preview of
 this readme open:
 
@@ -55,7 +55,7 @@ this readme open:
     codespace-init.sh and execute this bash script line-by-line in your
     terminal leveraging copy and paste. Your first time pasting, you
     will be prompted to allow data from your clipboard.\
-    ![](./media/media/image3.png)
+    ![](./media/image3.png)
 
 3.  Note that the script will update your Codespace VM (Ubuntu
     instance), install uuid-runtime for uuidgen, and install the
@@ -83,14 +83,14 @@ this readme open:
 
 - Default output format: json
 
-![](./media/media/image4.png)
+![](./media/image4.png)
 
 5.  Finally, open your lab-params.sh file and navigate to
     <https://checkip.amazonaws.com> in your browser. Replace the
     CLIENT_IP variable in lab-params with the IP address shown in your
     browser.
 
-![](./media/media/image5.png)
+![](./media/image5.png)
 
 ## Section 2: Create a Hadoop cluster using Amazon Elastic MapReduce (EMR), CloudFormation, and the AWS CLI
 
@@ -103,7 +103,7 @@ line. Be sure to observe the output on your terminal.
 2.  The first section initialize lab environment variables from
     lab-params.sh.
 
-![](./media/media/image6.png)
+![](./media/image6.png)
 
 3.  The second section has several steps:
 
@@ -126,7 +126,7 @@ line. Be sure to observe the output on your terminal.
         may take 15+ minutes as you provision a big data cluster from
         scratch.
 
-> ![](./media/media/image7.png)
+> ![](./media/image7.png)
 
 ## Section 3: Take a look at the new infrastructure then transfer files and connect to the Hadoop master node
 
@@ -150,7 +150,7 @@ line. Be sure to observe the output on your terminal.
 
 - Two Hadoop data nodes
 
-> ![](./media/media/image8.png)
+> ![](./media/image8.png)
 
 3.  The following commands first leverage the AWS CLI to identify the ID
     for our running Hadoop cluster, pause execution until the cluster is
@@ -161,8 +161,8 @@ line. Be sure to observe the output on your terminal.
 Note the ASCII art welcoming you to the Amazon Linux 2023 instance and
 running EMR cluster upon successful connection.
 
-![](./media/media/image9.png)
-![](./media/media/image10.png)
+![](./media/image9.png)
+![](./media/image10.png)
 
 ## Section 4: Bringing data into the data lake
 
@@ -179,24 +179,24 @@ here: <https://registry.opendata.aws/noaa-gsod/>.
     reduce the number of files written in the next step:
 
 ![Text Description automatically
-generated](./media/media/image11.png)
+generated](./media/image11.png)
 
 2.  Next, write the data to your external S3 bucket. Note that the
     bucket name is passed as a driver argument when invoking your
     PySpark session, then referenced later in the script.
 
-![](./media/media/image12.png)
+![](./media/image12.png)
 
 3.  Now we'll write the weather data to our HDFS instance:
 
-![](./media/media/image13.png)
+![](./media/image13.png)
 
 4.  Let's explore the data and execute some operations in Spark. Show 10
     records on the console, print the count of records, and execute some
     SQL to aggregate the high temperature. We'll write the average high
     temperature to HDFS and exit the pyspark console:
 
-![](./media/media/image14.png)
+![](./media/image14.png)
 
 ## Section 5: Review output in HDFS and S3
 
@@ -204,9 +204,9 @@ generated](./media/media/image11.png)
     noaa_surface_summary output directory. Once you are done, you may
     exit out of your SSH session and return to your Codespace:
 
-> ![](./media/media/image15.png)
+> ![](./media/image15.png)
 
-2.  ![](./media/media/image16.png)We also wrote files to your S3 bucket.
+2.  ![](./media/image16.png)We also wrote files to your S3 bucket.
     You may view these in the AWS management console. The S3 service is
     located at <https://us-east-1.console.aws.amazon.com/s3>.
 

@@ -18,14 +18,14 @@ also included in our AWS Academy class.
 2.  Once you have logged in and selected the appropriate class, navigate
     to Modules and select 'Launch AWS Academy Learner Lab'. Please
     explore other class material as needed.\
-    ![](./media/media/image1.png)
+    ![](./media/image1.png)
 
 3.  Your first time using the lab you will have to agree to the terms of
     service. If you see a blank screen, refresh the page.
 
 # Traversing the AWS Academy lab page
 
-![](./media/media/image2.png)
+![](./media/image2.png)
 
 Numbers in the labeled AWS Academy Learner Lab page correspond to the
 following features:
@@ -61,16 +61,16 @@ lab git repository, and get started with the lab.
 
 1.  Navigate to the hamburger menu in the top left corner of the page:
 
-![](./media/media/image3.png)
+![](./media/image3.png)
 
 2.  Select 'Codespaces':
 
-![](./media/media/image4.png)
+![](./media/image4.png)
 
 3.  Select the Blank template. Note that when you return you will have
     the option to select an existing Codespace, also shown below:
 
-![](./media/media/image5.png)
+![](./media/image5.png)
 
 4.  You will briefly see a 'Setting up your Codespace' message. Once
     your VS Code instance is up and running, you will be prompted to
@@ -85,6 +85,6 @@ Click 'Clone Git Repository', enter the repository URL for the current
 lab, and hit enter to pull in lab artifacts including code and readme
 files. When prompted, select the default destination and 'Open' option.
 
-![](./media/media/image6.png)
+![](./media/image6.png)
 
 6.  You are now ready to begin your lab.
