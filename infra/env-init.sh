@@ -1,7 +1,7 @@
 ############################################
 # INITIALIZE LAB PARAMETERS AND VARIABLES  #
 ############################################
-source ./infra/lab-params.sh
+source infra/lab-params.sh
 
 ############################################
 # USE EXISTING OR CREATE NEW S3 BUCKET     #

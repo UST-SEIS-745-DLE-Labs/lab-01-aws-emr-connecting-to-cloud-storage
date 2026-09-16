@@ -4,12 +4,13 @@ In this lab we will spin up a Hadoop cluster on Amazon Elastic MapReduce
 (EMR) running one master node and two data nodes. For deployment, we
 will leverage Amazon Web Services (AWS) CloudFormation, a cloud
 Infrastructure as Code (IAC) platform. Additionally, for automating
-deployment and other configuration tasks you will use a Github Codespace 
-development environment and the AWS command line interface.
+deployment and other configuration tasks you will use a GitHub Codespace
+development environment (VS Code in your browser) and the AWS command
+line interface.
 
 Once infrastructure deployment is complete, we will connect to a public
-S3 bucket hosting an AWS Open Data dataset (NOAA surface weather readings) and
-bring that into our Data Lake using PySpark. Next, you will explore the
+S3 bucket hosting an AWS Open Data dataset (NOAA surface readings) and
+bring that into our Data Lake using Python. Next, you will explore the
 differences between the Hadoop Distributed File System (HDFS) running on
 EMR and the EMR file system (EMRFS) backed by AWS S3. In this lab, we
 are using AWS S3 for data lake storage and Apache Spark on EMR for our
@@ -18,62 +19,123 @@ data lake compute.
 ## Pre-requisites
 
 As a prerequisite to this lab you should have access to our class AWS
-environment via <https://awsacademy.instructure.com>.
+environment via <https://awsacademy.instructure.com>. Your lab
+environment should be running for this demo.
 
-You should also have a GitHub account and access to create a new GitHub
-Codespace: https://github.com/features/codespaces
+You should also have a GitHub account, ideally associated with your UST
+email address:\
+<https://github.com/>. Your Codespace should be up and running for the
+lab.
 
-Here is an overview of our development environment:
+Here is an overview of our lab environment:
 
-TODO add new architectural diagram
+![](./media/media/image1.png)
 
-## Section 1: Create blank GitHub Codespace and Clone Repository
+## Section 1: Installing lab dependencies and configuring AWS CLI in Codespace
 
-Notes:
-- Clone repository from GitHub: https://github.com/UST-SEIS-745-DLE-Labs/lab-01-aws-emr-connecting-to-cloud-storage
-- Readme may be previewed directly in your Codespace or on your GitHub Repository home page
-- In order for instructors to maintain this repository, you'll need to configure the git subtree executable to work appropriately.  
+Follow development environment setup instructions located in setup-docs
+to ensure your AWS Academy Learner Lab is up and running, you are logged
+into your GitHub Codespace, and you have cloned the repository for this
+particular lab:
+[**https://github.com/UST-SEIS-745-DLE-Labs/lab-01-aws-emr-connecting-to-cloud-storage**](https://github.com/UST-SEIS-745-DLE-Labs/lab-01-aws-emr-connecting-to-cloud-storage).
 
-    Seems to be an issue with the Git installation on this version of Ubuntu.  Creating a symbolic link fixes this: 
-    ```
-    sudo chmod +x /usr/share/doc/git/contrib/subtree/git-subtree.sh
-    sudo ln -s /usr/share/doc/git/contrib/subtree/git-subtree.sh /  usr/local/libexec/git-core/git-subtree
-    ```
-- For maintenance of these labs we will want something of a developer's guide in its own repository.
-- In order to push to main and feature branches from codespaces, you need to reauthenticate with github and update git cli credentials like so:
-    ```
-    export GITHUB_TOKEN=
-    gh auth login
-    gh auth setup-git
-    ```
+1.  You should now see your Codespace environment along with the cloned
+    lab repository. If you need to clone the repository, open the
+    command pallet (Ctrl + Shift + P on Windows) and search 'Git Clone'.
+    Enter the repository URL, clone from URL, and accept the default
+    location. Open the repository rather than adding it to the
+    workspace.
 
-TODO Complete Section 1 with detailed instructions
+![](./media/media/image2.png)Your
+Codespace should look something like this, possibly with a preview of
+this readme open:
 
-## Section 2: Install AWS CLI, update lab parameters, and install other dependencies
+2.  The 'infra' directory holds necessary infrastructure as code (IAC)
+    artifacts for setting up your Codespace and deploying to AWS. Open
+    codespace-init.sh and execute this bash script line-by-line in your
+    terminal leveraging copy and paste. Your first time pasting, you
+    will be prompted to allow data from your clipboard.\
+    ![](./media/media/image3.png)
 
-Steps for this section are included primarly in ./infra/codespace-init.sh.  It seemed appropriate to place this in the infra directory as necessary codespace installations will
-in large part be determined by what is needed for deploying the infrastructure.  If there 
-are differences across labs, we can just install a superset of dependencies needed for all labs
-which use that particular lab environment.  A bit of extra overhead but no real harm done.
+3.  Note that the script will update your Codespace VM (Ubuntu
+    instance), install uuid-runtime for uuidgen, and install the
+    AWS CLI. The last line prompts you to configure AWS details which
+    you will need to retrieve from your AWS Academy Learner Lab. As with
+    any terminal / shell / REPL interface, follow along as control
+    passes from you (entering commands with Enter), to execution (you
+    wait), and to the final output reaching stdout and control passing
+    back to you. Once you see the familiar \$ dollar sign and cursor you
+    are ready to submit the next command. Ctrl + C on Windows to cancel
+    a command.
 
-AWS Configure parameters will need to be taken from your AWS Academy / Vocareum lab environment.
-Navigate to 'AWS Details', 'AWS CLI', and then click 'Show' from your Learner Lab environment page.
-Here you will see your aws access key id, aws access key, and aws session token.
+4.  After running aws configure, you are prompted for AWS CLI
+    authentication and configuration details. You may grab these under
+    AWS Details in your AWS Academy Learner Lab page. If you forgot to
+    start your learner lab, start it now.
 
-In addition to installing dependencies, you will need to navigate to checkip.amazonaws.com and 
-update the Client IP address in ./infra/lab-params.sh.
+- AWS Access Key ID found under AWS CLI
 
-Note that all shell scripts here are expected to be entered into the terminal line by line,
-building student familiarity with the terminal / REPL flow, Linux utilities, git/aws CLIs,
-reading stdout, and troubleshooting issues as they arise.
+- AWS Secret Access Key found under AWS CLI
 
-Another way to configure the AWS CLI is to place it within the container definition.  May look at these features more closely in the future.
+- AWS Session Token found under AWS CLI
 
-TODO complete section 2
+- Default region name: us-east-1
+
+- Default output format: json
+
+![](./media/media/image4.png)
+
+5.  Finally, open your lab-params.sh file and navigate to
+    <https://checkip.amazonaws.com> in your browser. Replace the
+    CLIENT_IP variable in lab-params with the IP address shown in your
+    browser.
+
+![](./media/media/image5.png)
+
+## Section 2: Create a Hadoop cluster using Amazon Elastic MapReduce (EMR), CloudFormation, and the AWS CLI
+
+**Note:** when executing commands from lab-commands.sh do so line by
+line. Be sure to observe the output on your terminal.
+
+1.  Open infra/env-init.sh and inspect the shell script. Execute line by
+    line as you go through the following instructions.
+
+2.  The first section initialize lab environment variables from
+    lab-params.sh.
+
+![](./media/media/image6.png)
+
+3.  The second section has several steps:
+
+    a.  Checks for existing S3 buckets in your AWS account leveraging
+        the AWS CLI.
+
+    b.  If no S3 bucket exists, create a new one with a unique ID
+        leveraging uuidgen and the AWS CLI.
+
+    c.  Append your IP address with /32, making it a valid single-IP
+        CIDR value.
+
+    d.  Creates a key pair to use when authenticating to EC2 (elastic
+        compute cloud) instances. Modify permissions on the private key
+        file to make it suitable for SSH authentication.
+
+    e.  Runs an AWS CloudFormation deploy to stand up the EMR cluster
+        defined in infra/template.json. This cluster has two worker
+        nodes (and a driver node) running both Spark and HDFS. This step
+        may take 15+ minutes as you provision a big data cluster from
+        scratch.
+
+> ![](./media/media/image7.png)
 
 ## Section 3: Take a look at the new infrastructure then transfer files and connect to the Hadoop master node
 
-1.  Navigate to the EC2 instances page. You should have four EC2
+1.  While your CloudFormation deployment completes, you can view live
+    progress by navigating here or searching 'CloudFormation' in the AWS
+    management console:
+    <https://us-east-1.console.aws.amazon.com/cloudformation>
+
+2.  Navigate to the EC2 instances page. You should have four EC2
     instances either starting or running. Note that these were created
     when we deployed our CloudFormation template above. Specifying
     infrastructure in formats like AWS CloudFormation is known as
@@ -81,30 +143,26 @@ TODO complete section 2
     version control and in synch between environments. It also makes it
     easy to destroy and recreate infrastructure.
 
-> EC2 instances at <https://console.aws.amazon.com/ec2>:
-
-- A t2.micro instance used by our Cloud9 environments (your terminal
-  window)
+> View EC2 instances at <https://console.aws.amazon.com/ec2>. You should
+> see all three m5.xlarge instances :
 
 - A single Hadoop master node
 
 - Two Hadoop data nodes
 
-> ![](./media/image8.png){width="7.5in" height="2.4027777777777777in"}
+> ![](./media/media/image8.png)
 
-2.  The following commands first leverage the AWS CLI to identify the ID
+3.  The following commands first leverage the AWS CLI to identify the ID
     for our running Hadoop cluster, pause execution until the cluster is
     running, and query the public host (DNS) name of the master node.
     Then, we use the private key we created earlier to connect to the
-    EMR master node.
+    EMR master node. When prompted, type yes to continue connecting.
 
-![Text Description automatically
-generated](./media/image9.png){width="6.666666666666667in"
-height="0.9444444444444444in"}
+Note the ASCII art welcoming you to the Amazon Linux 2023 instance and
+running EMR cluster upon successful connection.
 
-![Graphical user interface, text Description automatically
-generated](./media/image10.png){width="4.460442913385827in"
-height="2.725in"}
+![](./media/media/image9.png)
+![](./media/media/image10.png)
 
 ## Section 4: Bringing data into the data lake
 
@@ -121,61 +179,51 @@ here: <https://registry.opendata.aws/noaa-gsod/>.
     reduce the number of files written in the next step:
 
 ![Text Description automatically
-generated](./media/image11.png){width="5.520833333333333in"
-height="2.3125in"}
+generated](./media/media/image11.png)
 
-2.  ![Text Description automatically generated with medium
-    confidence](./media/image12.png){width="7.5in"
-    height="0.9645833333333333in"}![Graphical user interface, text,
-    application Description automatically
-    generated](./media/image13.png){width="7.5in"
-    height="1.3430555555555554in"}Next, write the data to your external
-    S3 bucket. Note that you will need to replace bucket_name with your
-    S3 bucket ID. This can be found here:
-    <https://s3.console.aws.amazon.com/s3/buckets?region=us-east-1>.
+2.  Next, write the data to your external S3 bucket. Note that the
+    bucket name is passed as a driver argument when invoking your
+    PySpark session, then referenced later in the script.
+
+![](./media/media/image12.png)
 
 3.  Now we'll write the weather data to our HDFS instance:
 
-![](./media/image14.png){width="4.135416666666667in" height="0.78125in"}
+![](./media/media/image13.png)
 
 4.  Let's explore the data and execute some operations in Spark. Show 10
     records on the console, print the count of records, and execute some
     SQL to aggregate the high temperature. We'll write the average high
     temperature to HDFS and exit the pyspark console:
 
-![](./media/image15.png){width="4.510416666666667in"
-height="2.2083333333333335in"}
+![](./media/media/image14.png)
 
 ## Section 5: Review output in HDFS and S3
 
 1.  Leveraging the HDFS command line interface, list files in the
-    noaa_surface_summary output directory.
+    noaa_surface_summary output directory. Once you are done, you may
+    exit out of your SSH session and return to your Codespace:
 
-> ![](./media/image16.png){width="6.447916666666667in"
-> height="1.0729166666666667in"}
+> ![](./media/media/image15.png)
 
-2.  From the AWS management console, find your S3 bucket and browse
-    files. You may traverse the object namespace, download objects,
-    delete objects, and more from the AWS console:
-    <https://s3.console.aws.amazon.com/s3/buckets?region=us-east-1>
+2.  ![](./media/media/image16.png)We also wrote files to your S3 bucket.
+    You may view these in the AWS management console. The S3 service is
+    located at <https://us-east-1.console.aws.amazon.com/s3>.
 
 ## Section 6: Destroying your Amazon EMR Cluster and inspecting lab files
 
-1.  In a normal production environment you would leave your big data
-    environment up and running or leave the data stored on S3 for when
-    you turn your cluster back on. However, since we are on a student
-    lab budget we will destroy our environment at the end of each lab.
-
-The env-destroy.sh script will take care of cleaning up lab resources.
-
-2.  Finally, reflect on the lab and inspect the template.json file and
-    CloudFormation commands used to automate cluster deployment.
+The infra/env-destroy.sh script will clean up lab resources, ensuring
+your AWS environment is left in a clean state when you start the next
+lab or decide to rerun the current lab. Note that EMR clusters are
+ephemeral; once terminated there is no restarting them. Instead, you
+deploy a new cluster the next time you need it.
 
 ## Conclusion
 
-You have now used a running EMR cluster and Spark to bring data into our
-data lake from a remote source. Additionally, you have connected to both
-cloud storage (S3) and the HDFS instance running on EMR. Finally, you
-have taken small steps to explore and process data within a data lake
-environment. Reflect on the differences between cloud storage and HDFS
-that we covered during lecture.
+You have now deployed a big data cluster leveraging Amazon ERM and used
+that running cluster and Spark to bring data into our data lake from a
+remote source. Additionally, you have connected to both cloud storage
+(S3) and the HDFS instance running on EMR. Finally, you have taken small
+steps to explore and process data within a data lake environment.
+Reflect on the differences between cloud storage and HDFS that we
+covered during lecture.

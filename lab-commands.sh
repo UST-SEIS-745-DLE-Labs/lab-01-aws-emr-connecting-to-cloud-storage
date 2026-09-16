@@ -2,7 +2,6 @@
 # LOAD LAB PARAMETERS                      #
 ############################################
 source ./infra/lab-params.sh
-S3_BUCKET_NAME=`aws s3api list-buckets --query "Buckets[0].Name" --output text`
 
 ############################################
 # CONNECT TO EMR MASTER NODE               #
@@ -11,11 +10,12 @@ LAB_CLUSTER_ID=`aws emr list-clusters --query "Clusters[?Name=='${LAB_ENV_NAME}'
 aws emr wait cluster-running --cluster-id ${LAB_CLUSTER_ID}
 LAB_EMR_MASTER_PUBLIC_HOST=`aws emr describe-cluster --cluster-id ${LAB_CLUSTER_ID} --query Cluster.MasterPublicDnsName --output text`
 
-ssh -i "${LAB_KEY_FILE}" "hadoop@${LAB_EMR_MASTER_PUBLIC_HOST}"
+ssh -i "${LAB_KEY_FILE}" -o SendEnv=S3_BUCKET_NAME "hadoop@${LAB_EMR_MASTER_PUBLIC_HOST}"
 
 ############################################
 # PySpark import from AWS Open Data        #
 ############################################
+S3_BUCKET_NAME=`aws s3api list-buckets --query "Buckets[0].Name" --output text`
 pyspark --conf spark.driver.args="$S3_BUCKET_NAME"
 
 s3_bucket = sc.getConf().get("spark.driver.args")
@@ -57,9 +57,3 @@ hdfs dfs -ls /user/hadoop/noaa_surface_summary/2022/agg/avg_high_tmp # Check imp
 hdfs dfs -cat /user/hadoop/noaa_aggregates/2022/agg/avg_high_tmp/*.csv # Print file to console
 
 exit
-############################################
-# DELETE LAB RESOURCES                     #
-############################################
-aws cloudformation delete-stack --stack-name "lab-emr-cluster-stack"
-aws ec2 delete-key-pair --key-name "${LAB_KEY_NAME}"
-aws cloudformation wait stack-delete-complete --stack-name "lab-emr-cluster-stack"  
