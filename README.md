@@ -220,7 +220,7 @@ deploy a new cluster the next time you need it.
 
 ## Conclusion
 
-You have now deployed a big data cluster leveraging Amazon ERM and used
+You have now deployed a big data cluster leveraging Amazon EMR and used
 that running cluster and Spark to bring data into our data lake from a
 remote source. Additionally, you have connected to both cloud storage
 (S3) and the HDFS instance running on EMR. Finally, you have taken small
