@@ -53,7 +53,7 @@ exit()
 ############################################
 
 hdfs dfs -ls /user/hadoop/noaa_surface_summary # Check imported data in HDFS
-hdfs dfs -ls /user/hadoop/noaa_surface_summary/2022/agg/avg_high_tmp # Check imported data in HDFS
-hdfs dfs -cat /user/hadoop/noaa_aggregates/2022/agg/avg_high_tmp/*.csv # Print file to console
+hdfs dfs -ls /user/hadoop/noaa_aggregates/2022/agg/avg_high_tmp # Check imported data in HDFS
+hdfs dfs -cat /user/hadoop/noaa_aggregates/2022/agg/avg_high_tmp/*.csv # Print file to console.  Replace wildcard with file name.
 
 exit
