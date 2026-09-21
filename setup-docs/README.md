@@ -82,9 +82,11 @@ lab git repository, and get started with the lab.
     Usage Policy when using chat and agent features.
 
 Click 'Clone Git Repository', enter the repository URL for the current
-lab, and hit enter to pull in lab artifacts including code and readme
+lab, and click 'Clone from URL' to pull in lab artifacts including code and readme
 files. When prompted, select the default destination and 'Open' option.
 
 ![](./media/image6.png)
+
+![](./media/image7.png)
 
 6.  You are now ready to begin your lab.
