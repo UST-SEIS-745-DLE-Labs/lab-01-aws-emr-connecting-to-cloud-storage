@@ -30,7 +30,7 @@ chmod 400 "${LAB_KEY_FILE}" #change permissions
 
 aws cloudformation deploy \
   --template-file ./infra/template.json \
-  --stack-name "lab-emr-cluster-stack" \
+  --stack-name "${LAB_STACK_NAME}" \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides \
     Name="${LAB_ENV_NAME}" \
